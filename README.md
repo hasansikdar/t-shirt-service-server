@@ -8,3 +8,4 @@ T-Shirt
 ## Opractions
 1. get
 2. post
+3. delete
