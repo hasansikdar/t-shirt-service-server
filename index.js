@@ -15,17 +15,17 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 async function run() {
-    try{
+    try {
         const serviceCollection = client.db('individual-service').collection('services');
         const reviewsCollection = client.db('individual-service').collection('reviews');
 
-        app.post('/addService', async(req, res) =>{
+        app.post('/addService', async (req, res) => {
             const service = req.body;
             const result = await serviceCollection.insertOne(service);
             res.send(result);
         })
 
-        app.get('/services', async(req, res) => {
+        app.get('/services', async (req, res) => {
 
             const email = req.query.email;
 
@@ -33,38 +33,38 @@ async function run() {
             const result = await cursor.toArray();
             res.send(result);
         })
-        app.delete('/services/:id', async(req, res) => {
+        app.delete('/services/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
+            const query = { _id: ObjectId(id) };
             const result = await serviceCollection.deleteOne(query);
             res.send(result);
         })
-        app.get('/homeServices', async(req, res) => {
+        app.get('/homeServices', async (req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
             const result = await cursor.limit(3).toArray();
             res.send(result);
         })
-        app.get('/services/:id', async(req, res) =>{
+        app.get('/services/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id: ObjectId(id)};
-            const result  = await serviceCollection.findOne(query)
+            const query = { _id: ObjectId(id) };
+            const result = await serviceCollection.findOne(query)
             res.send(result);
         })
-        app.post('/reviews', async(req, res) =>{
+        app.post('/reviews', async (req, res) => {
             const review = req.body;
             const result = await reviewsCollection.insertOne(review);
             res.send(result);
-            
+
         })
-        app.get('/myReviews', async(req, res) =>{
+        app.get('/myReviews', async (req, res) => {
             const email = req.query.email;
             const cursor = reviewsCollection.find({});
             const result = await cursor.toArray();
             const myReviewsFiltering = result.filter(rev => rev.userEmail === email);
             res.send(myReviewsFiltering);
         })
-        app.get('/productReviews', async(req, res) => {
+        app.get('/productReviews', async (req, res) => {
             const id = req.query.serviceID;
             const query = {};
             const cursor = reviewsCollection.find(query);
@@ -72,14 +72,33 @@ async function run() {
             const filteringServiceId = result.filter(review => review.serviceID === id);
             res.send(filteringServiceId);
         })
-        app.delete('/productReviews/:id', async(req, res) =>{
+        app.patch('/updateReview/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {_id:ObjectId(id)};
+            const reviewupdate = req.body.reviewupdate;
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    review: reviewupdate
+                }
+            }
+            const result = await reviewsCollection.updateMany(filter, updateDoc);
+            res.send(result);
+        })
+        app.get('/modal/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id: ObjectId(id)};
+            const cursor = await reviewsCollection.findOne(query);
+            res.send(cursor);
+            console.log(id);
+        })
+        app.delete('/productReviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
             const result = await reviewsCollection.deleteOne(query);
             res.send(result);
         })
     }
-    finally{
+    finally {
 
     }
 
@@ -94,7 +113,7 @@ run().catch(error => console.log(error));
 
 
 
-app.get('/', (req, res) =>{
+app.get('/', (req, res) => {
     res.send('t-shirt server is running')
 })
 app.listen(port, (req, res) => console.log('t-shirt server is running'))
