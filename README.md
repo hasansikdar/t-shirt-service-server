@@ -9,3 +9,4 @@ T-Shirt
 1. get
 2. post
 3. delete
+4. condition query
